@@ -31,6 +31,10 @@ export class Player extends Entity {
         
         this.damageMultiplier = 1;
         this.inventory = null; // Holds one item
+        
+        // Invulnerability
+        this.invulnerabilityTimer = 0;
+        this.invulnerabilityDuration = 0.5; // 0.5 seconds of i-frames
     }
 
     update(dt, input, game) {
@@ -86,6 +90,11 @@ export class Player extends Entity {
         
         // Update UI for cooldowns
         this.updateSkillUI();
+
+        // Update Invulnerability
+        if (this.invulnerabilityTimer > 0) {
+            this.invulnerabilityTimer -= dt;
+        }
     }
 
     performAutoAttack(game) {
@@ -283,7 +292,10 @@ export class Player extends Entity {
     }
 
     takeDamage(amount) {
+        if (this.invulnerabilityTimer > 0) return;
+        
         this.hp -= amount;
+        this.invulnerabilityTimer = this.invulnerabilityDuration;
     }
 
     gainXp(amount, game) {
@@ -316,5 +328,18 @@ export class Player extends Entity {
                 if (overlay) overlay.style.height = `${pct}%`;
             }
         });
+    }
+
+    draw(renderer) {
+        if (this.invulnerabilityTimer > 0) {
+            // Flash effect
+            if (Math.floor(Date.now() / 100) % 2 === 0) {
+                renderer.ctx.globalAlpha = 0.5;
+            }
+        }
+        
+        super.draw(renderer);
+        
+        renderer.ctx.globalAlpha = 1.0;
     }
 }

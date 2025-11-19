@@ -35,7 +35,13 @@ export class Game {
         this.score = 0;
         this.timeSurvived = 0;
         this.waveTimer = 0;
+        this.waveTimer = 0;
         this.airdropTimer = 0;
+        
+        // Wave System State
+        this.currentWaveIndex = 0;
+        this.pendingWaveSpawns = [];
+        this.waveSpawnTimer = 0;
         
         // Bind loop
         this.loop = this.loop.bind(this);
@@ -66,6 +72,18 @@ export class Game {
                 } catch (err) {
                     console.error('Debug: Error spawning tank:', err);
                 }
+            }
+            // Debug: Star
+            if (e.key === 'i' || e.key === 'I') {
+                const enemy = new Enemy(this.player.x + 200, this.player.y, 'star');
+                this.enemies.push(enemy);
+                console.log('Debug: Force spawned Star');
+            }
+            // Debug: Blue Tank
+            if (e.key === 'u' || e.key === 'U') {
+                const enemy = new Enemy(this.player.x + 200, this.player.y, 'tank_armored');
+                this.enemies.push(enemy);
+                console.log('Debug: Force spawned Armored Tank');
             }
         });
     }
@@ -134,16 +152,10 @@ export class Game {
         this.waveTimer += dt;
         this.airdropTimer += dt;
 
-        // Spawn Enemies
-        const spawnInterval = Math.max(
-            this.config.spawning.minInterval, 
-            this.config.spawning.baseInterval - (this.player.level * this.config.spawning.decreasePerWave)
-        );
+        // Spawn Enemies (Random & Waves)
+        this.handleSpawning(dt);
         
-        if (this.waveTimer > spawnInterval) {
-            this.spawnEnemy();
-            this.waveTimer = 0;
-        }
+        // Spawn Airdrops
         
         // Spawn Airdrops
         if (this.config.airdrops.enabled && this.airdropTimer > this.config.airdrops.interval) {
@@ -273,7 +285,74 @@ export class Game {
         this.visualEffects.push(new VisualEffect(x, y, type, config));
     }
 
-    spawnEnemy() {
+    handleSpawning(dt) {
+        // 1. Check for Wave Triggers
+        if (this.currentWaveIndex < this.config.waves.length) {
+            const nextWave = this.config.waves[this.currentWaveIndex];
+            if (this.timeSurvived >= nextWave.time) {
+                console.log(`Starting Wave ${this.currentWaveIndex + 1}: ${nextWave.type} x${nextWave.count}`);
+                // Queue spawns
+                for (let i = 0; i < nextWave.count; i++) {
+                    this.pendingWaveSpawns.push({
+                        type: nextWave.type,
+                        delay: i * nextWave.interval
+                    });
+                }
+                this.currentWaveIndex++;
+            }
+        }
+
+        // 2. Process Pending Wave Spawns
+        if (this.pendingWaveSpawns.length > 0) {
+            for (let i = this.pendingWaveSpawns.length - 1; i >= 0; i--) {
+                const spawn = this.pendingWaveSpawns[i];
+                spawn.delay -= dt;
+                if (spawn.delay <= 0) {
+                    this.spawnEnemy(spawn.type);
+                    this.pendingWaveSpawns.splice(i, 1);
+                }
+            }
+        }
+
+        // 3. Regular Random Spawning
+        const spawnInterval = Math.max(
+            this.config.spawning.minInterval, 
+            this.config.spawning.baseInterval - (this.player.level * this.config.spawning.decreasePerWave)
+        );
+        
+        if (this.waveTimer > spawnInterval) {
+            this.spawnRandomEnemy();
+            this.waveTimer = 0;
+        }
+    }
+
+    spawnRandomEnemy() {
+        // Determine current pool based on time
+        let currentPool = this.config.spawnPools[0];
+        for (const pool of this.config.spawnPools) {
+            if (this.timeSurvived >= pool.minTime) {
+                currentPool = pool;
+            }
+        }
+
+        // Weighted Random Selection
+        const weights = currentPool.weights;
+        const totalWeight = Object.values(weights).reduce((a, b) => a + b, 0);
+        let random = Math.random() * totalWeight;
+        
+        let selectedType = 'basic';
+        for (const [type, weight] of Object.entries(weights)) {
+            random -= weight;
+            if (random <= 0) {
+                selectedType = type;
+                break;
+            }
+        }
+        
+        this.spawnEnemy(selectedType);
+    }
+
+    spawnEnemy(forceType = null) {
         // Spawn at random edge
         const edge = Utils.randomInt(0, 3);
         let x, y;
@@ -287,21 +366,7 @@ export class Game {
             case 3: x = -50; y = Utils.random(0, h); break; // Left
         }
         
-        // Random type
-        let type = 'basic';
-        const rand = Math.random();
-        
-        // console.log(`Spawn check: Time=${this.timeSurvived.toFixed(1)}, Rand=${rand.toFixed(2)}`);
-
-        if (this.timeSurvived > 180 && rand > 0.9) {
-            type = 'tank';
-            console.log('Spawning Tank! (Natural Spawn)');
-        } else if (this.timeSurvived > 60 && rand > 0.8) {
-            type = 'shooter';
-            console.log('Spawning Shooter! (Natural Spawn)');
-        } else if (rand > 0.7) {
-            type = 'fast';
-        }
+        const type = forceType || 'basic';
         const enemy = new Enemy(x, y, type);
         this.enemies.push(enemy);
     }

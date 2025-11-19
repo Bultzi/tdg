@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vampire Survivors Clone</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <!-- Loader -->
+    <div id="loader">
+        <div class="loader-content">
+            <div class="geo-shape"></div>
+            <div class="loading-text">INITIALIZING...</div>
+        </div>
+    </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Main Menu -->
+        <div id="main-menu" class="ui-overlay hidden-initially">
+            <div class="menu-bg-grid"></div>
+            <div class="menu-content">
+                <h1 class="glitch-title" data-text="SURVIVORS CLONE">SURVIVORS CLONE</h1>
+                
+                <div class="menu-panel">
+                    <div class="input-group">
+                        <label for="player-name">IDENTITY</label>
+                        <input type="text" id="player-name" placeholder="ENTER HERO NAME" autocomplete="off">
+                    </div>
+
+                    <div class="character-selection">
+                        <h2>SELECT AVATAR</h2>
+                        <div id="character-list">
+                            <!-- Characters injected by JS -->
+                        </div>
+                    </div>
+
+                    <div class="menu-actions">
+                        <button id="start-btn" class="cyber-btn" disabled>
+                            <span class="btn-content">INITIATE SEQUENCE</span>
+                            <span class="btn-glitch"></span>
+                        </button>
+                        <button id="highscore-btn" class="cyber-btn secondary">
+                            <span class="btn-content">ARCHIVES</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Highscore Modal -->
+        <div id="menu-highscore-modal" class="ui-overlay hidden">
+            <div class="modal-content cyber-panel">
+                <h2>ARCHIVES [TOP 10]</h2>
+                <ul id="menu-highscore-list"></ul>
+                <button id="close-highscore-btn" class="cyber-btn small">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud" class="ui-overlay hidden">
+            <div class="top-bar">
+                <div class="bar-container">
+                    <div id="hp-bar" class="bar"></div>
+                    <span id="hp-text">100/100</span>
+                </div>
+                <div class="bar-container">
+                    <div id="xp-bar" class="bar"></div>
+                    <span id="level-text">Lvl 1</span>
+                </div>
+                <div id="score-display">Score: 0</div>
+                <div id="timer-display">00:00</div>
+            </div>
+            <div class="skill-bar">
+                <div class="skill-slot" id="skill-q">
+                    <span class="key">Q</span>
+                    <div class="icon"></div>
+                    <div class="cooldown-overlay"></div>
+                </div>
+                <div class="skill-slot" id="skill-e">
+                    <span class="key">E</span>
+                    <div class="icon"></div>
+                    <div class="cooldown-overlay"></div>
+                </div>
+                <div class="skill-slot" id="skill-r">
+                    <span class="key">R</span>
+                    <div class="icon"></div>
+                    <div class="cooldown-overlay"></div>
+                </div>
+                <div class="skill-slot item-slot" id="slot-f">
+                    <span class="key">F</span>
+                    <div class="icon" id="item-icon"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Level Up Modal -->
+        <div id="level-up-modal" class="ui-overlay hidden">
+            <h2>Level Up!</h2>
+            <div id="perk-options">
+                <!-- Perks injected by JS -->
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="ui-overlay hidden">
+            <h2>Game Over</h2>
+            <p>You survived for <span id="final-time"></span></p>
+            <p>Score: <span id="final-score"></span></p>
+            <button id="restart-btn">Play Again</button>
+            <div id="highscores">
+                <h3>Highscores</h3>
+                <ul id="highscore-list"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

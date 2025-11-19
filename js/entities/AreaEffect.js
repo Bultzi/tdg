@@ -40,7 +40,31 @@ export class AreaEffect extends Entity {
     applyDamage(game) {
         game.enemies.forEach(enemy => {
             if (Utils.distance(this.x, this.y, enemy.x, enemy.y) <= this.config.radius) {
-                enemy.takeDamage(this.damage * (this.owner ? this.owner.damageMultiplier : 1), game);
+                if (this.owner) {
+                    const isCritical = Math.random() < this.owner.critChance;
+                    const finalDamage = isCritical
+                        ? this.damage * this.owner.damageMultiplier * this.owner.critMultiplier
+                        : this.damage * this.owner.damageMultiplier;
+
+                    enemy.takeDamage(finalDamage, game, isCritical);
+
+                    if (isCritical) {
+                        game.addEffect('critSpark', enemy.x, enemy.y, {
+                            color: '#FFD700',
+                            radius: 20,
+                            duration: 0.3
+                        });
+                    } else {
+                        game.addEffect('hitSpark', enemy.x, enemy.y, {
+                            color: '#FFFFFF',
+                            radius: 10,
+                            duration: 0.2
+                        });
+                    }
+                } else {
+                    // Fallback for effects without an owner
+                    enemy.takeDamage(this.damage, game);
+                }
             }
         });
     }

@@ -30,6 +30,8 @@ export class Player extends Entity {
         };
         
         this.damageMultiplier = 1;
+        this.critChance = 0.05; // 5% base crit chance
+        this.critMultiplier = 1.5; // 150% base crit damage
         this.inventory = null; // Holds one item
         
         // Invulnerability
@@ -97,6 +99,30 @@ export class Player extends Entity {
         }
     }
 
+    dealDamage(enemy, baseDamage, game) {
+        const isCritical = Math.random() < this.critChance;
+        const finalDamage = isCritical
+            ? baseDamage * this.damageMultiplier * this.critMultiplier
+            : baseDamage * this.damageMultiplier;
+        
+        enemy.takeDamage(finalDamage, game, isCritical);
+
+        // Add hit effect
+        if (isCritical) {
+            game.addEffect('critSpark', enemy.x, enemy.y, {
+                color: '#FFD700',
+                radius: 25,
+                duration: 0.3
+            });
+        } else {
+            game.addEffect('hitSpark', enemy.x, enemy.y, {
+                color: '#FFFFFF',
+                radius: 15,
+                duration: 0.2
+            });
+        }
+    }
+
     performAutoAttack(game) {
         const config = this.characterClass.autoAttack;
         
@@ -144,7 +170,7 @@ export class Player extends Entity {
                         while (diff > Math.PI) diff -= Math.PI * 2;
                         
                         if (Math.abs(diff) < config.arc / 2) {
-                            enemy.takeDamage(config.damage * this.damageMultiplier, game);
+                            this.dealDamage(enemy, config.damage, game);
                         }
                     }
                 });
@@ -187,24 +213,6 @@ export class Player extends Entity {
                 duration: skill.duration 
             });
             
-            // Logic for DoT is handled by the effect or we need a persistent entity. 
-            // For simplicity, let's make it an AreaEffect attached to player? 
-            // Or just instant damage for now if it's a single hit, but the description says "spin".
-            // Let's use AreaEffect with 'dot' type centered on player.
-            // But AreaEffect is static. We might need to attach it. 
-            // For now, let's just do instant damage for the "cast" and maybe repeat it?
-            // Actually, let's spawn a persistent AreaEffect that follows player? 
-            // The current AreaEffect doesn't follow. 
-            // Let's stick to the previous implementation of instant hit + visual, 
-            // OR change it to a multi-hit logic. 
-            // Given the codebase, let's make it a static AoE for now or just instant.
-            // Re-reading characters.js: "damage: 10, // per tick", "duration: 3".
-            // So it should be a DoT.
-            // Let's spawn an AreaEffect that is static for now (limit of current system) or make it follow.
-            // I'll make it static at cast location for simplicity, or just instant damage around player.
-            // Let's go with: Instant damage around player (burst) for this iteration to match the "Visuals TODO" block I'm replacing.
-            // Wait, I can use the AreaEffect 'dot' type I created.
-            
             const ae = new AreaEffect(this.x, this.y, 'dot', {
                 radius: skill.radius,
                 damage: skill.damage,
@@ -233,7 +241,7 @@ export class Player extends Entity {
                     while (diff > Math.PI) diff -= Math.PI * 2;
                     
                     if (Math.abs(diff) < skill.arc / 2) {
-                        enemy.takeDamage(skill.damage * this.damageMultiplier, game);
+                        this.dealDamage(enemy, skill.damage, game);
                     }
                 }
             });
@@ -248,7 +256,7 @@ export class Player extends Entity {
             
             game.enemies.forEach(enemy => {
                 if (Utils.distance(this.x, this.y, enemy.x, enemy.y) <= skill.radius) {
-                    enemy.takeDamage(skill.damage * this.damageMultiplier, game);
+                    this.dealDamage(enemy, skill.damage, game);
                     // Apply freeze/slow if we had status effects (TODO)
                     enemy.speed *= 0.5; // Simple slow hack
                     setTimeout(() => { if(!enemy.isDead) enemy.speed *= 2; }, skill.duration * 1000);

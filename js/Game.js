@@ -198,7 +198,28 @@ export class Game {
             
             this.enemies.forEach(enemy => {
                 if (!proj.isEnemy && Utils.circleCollision(proj, enemy)) {
-                    enemy.takeDamage(proj.damage, this);
+                    // --- Critical Hit Logic ---
+                    const isCritical = Math.random() < this.player.critChance;
+                    const damage = isCritical 
+                        ? proj.damage * this.player.critMultiplier 
+                        : proj.damage;
+                    
+                    enemy.takeDamage(damage, this, isCritical);
+                    
+                    if (isCritical) {
+                        this.addEffect('critSpark', proj.x, proj.y, {
+                            color: '#FFD700',
+                            radius: 25,
+                            duration: 0.3
+                        });
+                    } else {
+                        this.addEffect('hitSpark', proj.x, proj.y, {
+                            color: '#FFFFFF',
+                            radius: 15,
+                            duration: 0.2
+                        });
+                    }
+                    
                     if (!proj.pierce || proj.pierce <= 0) {
                         proj.isDead = true;
                     } else {
@@ -277,8 +298,8 @@ export class Game {
         this.damageNumbers.forEach(dn => dn.draw(this.renderer));
     }
     
-    spawnDamageNumber(x, y, amount) {
-        this.damageNumbers.push(new DamageNumber(x, y, amount));
+    spawnDamageNumber(x, y, amount, isCritical = false) {
+        this.damageNumbers.push(new DamageNumber(x, y, amount, isCritical));
     }
 
     addEffect(type, x, y, config) {

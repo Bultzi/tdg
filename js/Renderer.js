@@ -47,9 +47,11 @@ export class Renderer {
         this.ctx.fillRect(x, y, w, h);
     }
 
-    drawText(text, x, y, color = 'white', size = 16) {
+    drawText(text, x, y, color = 'white', size = 16, weight = '') {
         this.ctx.fillStyle = color;
-        this.ctx.font = `${size}px Arial`;
+        this.ctx.font = `${weight} ${size}px Arial`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
         this.ctx.fillText(text, x, y);
     }
 }

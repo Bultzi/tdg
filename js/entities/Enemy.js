@@ -52,10 +52,10 @@ export class Enemy extends Entity {
         }
     }
 
-    takeDamage(amount, game) {
+    takeDamage(amount, game, isCritical = false) {
         this.hp -= amount;
         if (game && game.config && game.config.ui.showDamageNumbers) {
-            game.spawnDamageNumber(this.x, this.y - 20, amount);
+            game.spawnDamageNumber(this.x, this.y - 20, amount, isCritical);
         }
         
         if (this.hp <= 0) {

@@ -74,6 +74,40 @@ export class VisualEffect {
             ctx.moveTo(0, 0);
             ctx.lineTo(-this.config.dx * 50, -this.config.dy * 50);
             ctx.stroke();
+        } else if (this.type === 'hitSpark') {
+            ctx.globalAlpha = 1 - progress;
+            ctx.fillStyle = this.color;
+            const currentRadius = this.radius * (progress);
+            // Draw a sharp star-like shape
+            ctx.beginPath();
+            ctx.moveTo(0, -currentRadius);
+            ctx.lineTo(0, currentRadius);
+            ctx.moveTo(-currentRadius, 0);
+            ctx.lineTo(currentRadius, 0);
+            ctx.lineWidth = 3 * (1 - progress);
+            ctx.strokeStyle = this.color;
+            ctx.stroke();
+        } else if (this.type === 'critSpark') {
+            ctx.globalAlpha = 1 - progress;
+            const outerRadius = this.radius * (0.5 + progress * 0.5);
+            const innerRadius = outerRadius / 2;
+            
+            ctx.strokeStyle = this.color;
+            ctx.lineWidth = 4 * (1-progress);
+
+            // Draw a more complex star for crits
+            let angle = this.lifeTime * 20; // Spin
+            for (let i = 0; i < 4; i++) {
+                const x1 = Math.cos(angle) * innerRadius;
+                const y1 = Math.sin(angle) * innerRadius;
+                const x2 = Math.cos(angle) * outerRadius;
+                const y2 = Math.sin(angle) * outerRadius;
+                ctx.beginPath();
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+                ctx.stroke();
+                angle += Math.PI / 2;
+            }
         }
         
         ctx.restore();

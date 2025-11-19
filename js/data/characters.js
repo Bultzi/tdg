@@ -34,7 +34,6 @@ export const Characters = {
                 damage: 15,
                 radius: 150,
                 effect: 'freeze',
-                effect: 'freeze',
                 duration: 2,
                 icon: '❄️'
             },
@@ -43,7 +42,6 @@ export const Characters = {
                 cooldown: 30,
                 description: "Huge damage in an area.",
                 type: 'aoe_cursor',
-                damage: 100,
                 damage: 100,
                 radius: 100,
                 delay: 1,
@@ -54,25 +52,25 @@ export const Characters = {
     warrior: {
         name: "Warrior",
         stats: {
-            hp: 140,
+            hp: 160,
             speed: 130,
             attackSpeed: 0.6
         },
         autoAttack: {
             type: 'melee',
             damage: 15,
-            range: 60,
+            range: 100,
             arc: Math.PI / 2, // 90 degrees
-            duration: 0.2
+            duration: 0.2,
+            knockback: 15
         },
         skills: {
             q: {
                 name: "Slash",
-                cooldown: 3,
+                cooldown: 2,
                 description: "Wide slash attack.",
                 type: 'melee_arc',
                 damage: 25,
-                range: 100,
                 range: 100,
                 arc: Math.PI,
                 icon: '⚔️'
@@ -83,7 +81,6 @@ export const Characters = {
                 description: "Dash forward.",
                 type: 'dash',
                 distance: 200,
-                distance: 200,
                 speed: 800,
                 icon: '👟'
             },
@@ -93,7 +90,6 @@ export const Characters = {
                 description: "Spin dealing damage to all nearby.",
                 type: 'aoe_self',
                 damage: 10, // per tick
-                radius: 120,
                 radius: 120,
                 duration: 3,
                 icon: '🌪️'
@@ -125,7 +121,6 @@ export const Characters = {
                 speed: 700,
                 pierce: 3,
                 radius: 6,
-                radius: 6,
                 color: '#00b894',
                 icon: '🏹'
             },
@@ -145,7 +140,6 @@ export const Characters = {
                 description: "Damage area over time.",
                 type: 'aoe_cursor_dot',
                 damage: 10, // per tick
-                radius: 150,
                 radius: 150,
                 duration: 4,
                 icon: '🌧️'

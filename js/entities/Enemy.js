@@ -17,15 +17,31 @@ export class Enemy extends Entity {
         
         // Behavior state
         this.shootTimer = 0;
+
+        // Physics
+        this.knockbackVx = 0;
+        this.knockbackVy = 0;
+        this.damping = 0.90; // How quickly knockback fades
     }
 
     update(dt, player, game) {
-        // Move towards player
+        // --- Movement ---
+        // 1. Normal movement towards player
         const angle = Math.atan2(player.y - this.y, player.x - this.x);
-        this.x += Math.cos(angle) * this.speed * dt;
-        this.y += Math.sin(angle) * this.speed * dt;
+        const moveVx = Math.cos(angle) * this.speed;
+        const moveVy = Math.sin(angle) * this.speed;
 
-        // Behavior Logic
+        // 2. Combine and apply velocities
+        this.x += (moveVx + this.knockbackVx) * dt;
+        this.y += (moveVy + this.knockbackVy) * dt;
+
+        // 3. Dampen knockback velocity
+        this.knockbackVx *= this.damping;
+        this.knockbackVy *= this.damping;
+        if (Math.abs(this.knockbackVx) < 1) this.knockbackVx = 0;
+        if (Math.abs(this.knockbackVy) < 1) this.knockbackVy = 0;
+
+        // --- Behavior ---
         if (game && (this.data.behavior === 'shoot_single' || this.data.behavior === 'shoot_multi')) {
             this.shootTimer += dt;
             if (this.shootTimer >= this.data.shootInterval) {
@@ -50,6 +66,11 @@ export class Enemy extends Entity {
                 }
             }
         }
+    }
+
+    applyKnockback(force, angle) {
+        this.knockbackVx += Math.cos(angle) * force;
+        this.knockbackVy += Math.sin(angle) * force;
     }
 
     takeDamage(amount, game, isCritical = false) {

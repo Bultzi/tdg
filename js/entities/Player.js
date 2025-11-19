@@ -126,19 +126,23 @@ export class Player extends Entity {
     performAutoAttack(game) {
         const config = this.characterClass.autoAttack;
         
-        // Find nearest enemy
+        // Find nearest enemy to determine attack angle, but check if ANY enemy is in range to trigger attack
         let nearest = null;
         let minDist = Infinity;
+        let anyEnemyInRange = false;
         
         game.enemies.forEach(enemy => {
             const dist = Utils.distance(this.x, this.y, enemy.x, enemy.y);
+            if (dist < config.range) {
+                anyEnemyInRange = true;
+            }
             if (dist < minDist) {
                 minDist = dist;
                 nearest = enemy;
             }
         });
 
-        if (nearest && minDist < config.range) {
+        if (anyEnemyInRange && nearest) {
             const angle = Math.atan2(nearest.y - this.y, nearest.x - this.x);
             
             if (config.type === 'projectile') {
@@ -171,6 +175,11 @@ export class Player extends Entity {
                         
                         if (Math.abs(diff) < config.arc / 2) {
                             this.dealDamage(enemy, config.damage, game);
+                            // --- Knockback Logic ---
+                            if (config.knockback) {
+                                const knockbackAngle = Math.atan2(enemy.y - this.y, enemy.x - this.x);
+                                enemy.applyKnockback(config.knockback * 10, knockbackAngle); // Multiplied by 10 for more impact
+                            }
                         }
                     }
                 });
